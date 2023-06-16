@@ -8,4 +8,4 @@ TOKEN = get_token()
 
 bot = telebot.TeleBot(TOKEN)
 
-PLAYERS_ID_LIST = [878297528]
+PLAYERS_ID_LIST = [878297528,1548423795]
