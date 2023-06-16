@@ -1,4 +1,7 @@
 from consts import *
+from queries import *
+
+TREE = []
 
 @bot.message_handler(commands=['start'])
 def send_start(message):
@@ -12,19 +15,47 @@ def send_start(message):
         bot.reply_to(message,f'Привет!')
 
         # Реализация главного меню
-        menu_keyboard = telebot.types.ReplyKeyboardMarkup(row_width=1, resize_keyboard=False, one_time_keyboard=True)
+        buttons_list = ['Моя биография','Моя статистика','Команда',
+                        'Управление командой','Важная информация']
+        menu_keyboard = Keyboard(buttons_list)
 
-        my_bio = telebot.types.KeyboardButton(text='Моя биография') # биография
-        my_stat = telebot.types.KeyboardButton(text='Моя статистика') # статистика
-        my_team = telebot.types.KeyboardButton(text='Команда') # команда
+        bot.send_message(chat_id=message.chat.id,text='Главное меню',reply_markup=menu_keyboard.get_keyboard())
 
-        admin_mode = telebot.types.KeyboardButton(text='Управление командой')
+"""
+--------------------------------------------------БЛОК СТАТИСТИКА--------------------------------------------------
+"""
+@bot.message_handler(func=lambda message: message.text=='Моя статистика' or  message.text == 'Статистика')
+def send_stat(message):
+    TREE.append(message.text) # добавляем родительский раздел, чтобы понять, какую статистику выдать
 
-        info = telebot.types.KeyboardButton(text='Важная информация')
+    buttons_list = ['По сезонам', 'За всё время']
+    stat_keyboard = Keyboard(buttons_list)
+    bot.send_message(chat_id=message.chat.id, text='Статистика', reply_markup=stat_keyboard.get_keyboard())
 
-        menu_keyboard.add(my_bio,my_stat, my_team, admin_mode, info)
-        bot.send_message(chat_id=message.chat.id,text='Главное меню',reply_markup=menu_keyboard)
+@bot.message_handler(func=lambda message: message.text == 'За всё время')
+def send_all_time_stat(message):
+    pass
+
+@bot.message_handler(func=lambda message: message.text=='По сезонам')
+def send_season_stat(message):
+    TREE.append(message.text) # добавляем родительский раздел, чтобы понять, какую статистику выдать
+
+    buttons_list = ['Прошлый сезон', 'Текущий сезон']
+    season_stat_keyboard = Keyboard(buttons_list)
+    bot.send_message(chat_id=message.chat.id, text='Статистика по сезонам', reply_markup=season_stat_keyboard.get_keyboard())
+
+@bot.message_handler(func=lambda message: message.text=='Прошлый сезон' or message.text=='Текущий сезон')
+def send_season_stat(message):
+    TREE.append(message.text) # добавляем родительский раздел, чтобы понять, какую статистику выдать
+    season_stat = get_stat(TREE)
+
+''' Посмотреть ответы на сообщения'''
+# @bot.message_handler(func=lambda message: 1==1)
+# def handle_text(message):
+#     print(message.text)
 
 @bot.message_handler(func=lambda message: True)
 def echo_message(message):
     bot.reply_to(message, message.text)
+
+
