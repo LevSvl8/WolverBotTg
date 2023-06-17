@@ -4,6 +4,10 @@ def get_token():
     with open('files/token.txt') as f:
         return f.readline()
 
+def get_conn_params():
+    with open('files/config.txt') as f:
+        return f.readline().split(';')
+
 TOKEN = get_token()
 
 bot = telebot.TeleBot(TOKEN)
@@ -20,5 +24,3 @@ class Keyboard:
         for caption in captions:
             button = telebot.types.KeyboardButton(text=caption)
             self.keyboard.add(button)
-
-
