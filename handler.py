@@ -21,14 +21,35 @@ def send_start(message):
 
         bot.send_message(chat_id=message.chat.id,text='Главное меню',reply_markup=menu_keyboard.get_keyboard())
 
+@bot.message_handler(func=lambda message: message.text == 'Вернуться')
+def cancel(message):
+    print(TREE)
+    try:
+        TREE.pop(-1)
+    except:
+        send_start(message)
+
+    if not TREE.__len__():
+        send_start(message)
+    else:
+        parent = TREE[-1]
+        if parent == 'Моя статистика':
+            send_stat(message)
+        if parent == 'Статистика':
+            pass # добавить процедуру, которая обрабатывает Статистика
+        if parent == 'По сезонам':
+            send_season_stat(message)
+
+
 """
 --------------------------------------------------БЛОК СТАТИСТИКА--------------------------------------------------
 """
 @bot.message_handler(func=lambda message: message.text=='Моя статистика' or  message.text == 'Статистика')
 def send_stat(message):
-    TREE.append(message.text) # добавляем родительский раздел, чтобы понять, какую статистику выдать
+    if message.text !='Вернуться':
+        TREE.append(message.text) # добавляем родительский раздел, чтобы понять, какую статистику выдать
 
-    buttons_list = ['По сезонам', 'За всё время']
+    buttons_list = ['По сезонам', 'За всё время','Вернуться']
     stat_keyboard = Keyboard(buttons_list)
     bot.send_message(chat_id=message.chat.id, text='Статистика', reply_markup=stat_keyboard.get_keyboard())
 
@@ -38,9 +59,10 @@ def send_all_time_stat(message):
 
 @bot.message_handler(func=lambda message: message.text=='По сезонам')
 def send_season_stat(message):
-    TREE.append(message.text) # добавляем родительский раздел, чтобы понять, какую статистику выдать
+    if message.text !='Вернуться':
+        TREE.append(message.text) # добавляем родительский раздел, чтобы понять, какую статистику выдать
 
-    buttons_list = ['Прошлый сезон', 'Текущий сезон']
+    buttons_list = ['Прошлый сезон', 'Текущий сезон','Вернуться']
     season_stat_keyboard = Keyboard(buttons_list)
     bot.send_message(chat_id=message.chat.id, text='Статистика по сезонам', reply_markup=season_stat_keyboard.get_keyboard())
 
