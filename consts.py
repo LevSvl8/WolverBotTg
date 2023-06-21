@@ -5,14 +5,10 @@ def get_token():
     with open('files/token.txt') as f:
         return f.readline()
 
-def get_conn_params():
-    with open('files/config.txt') as f:
-        return f.readline().split(';')
-
 TOKEN = get_token()
 
 bot = telebot.TeleBot(TOKEN)
-db_session = Conn(get_conn_params())
+
 PLAYERS_ID_LIST = [878297528,1548423795]
 
 class Keyboard:

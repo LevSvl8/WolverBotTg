@@ -16,3 +16,8 @@ class Conn:
     def fetch_next(self):
         if self.type == 'PG':
             return self.crs.fetchone()
+def get_conn_params():
+    with open('files/config.txt') as f:
+        return f.readline().split(';')
+
+db_session = Conn(get_conn_params())
