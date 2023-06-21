@@ -4,18 +4,19 @@ from queries import *
 TREE = []
 
 @bot.message_handler(commands=['start'])
-def send_start(message):
+def send_start(message,initial = True ):
     """ Начало взаимодействия с ботом
             - данные пользователя сверяются с данными игроков команды
             - заправшиваются дополнительные данные, сохраняются в бд
     """
 
     user = User(message)
-
     if message.chat.id not in PLAYERS_ID_LIST:
-        bot.reply_to(message, f'Привет, для доступа обратись к админам команды')
+        if initial == True:
+            bot.reply_to(message, f'Привет, для доступа обратись к админам команды')
     else:
-        bot.reply_to(message,f'Привет, {user.name}!')
+        if initial == True:
+            bot.reply_to(message,f'Привет, {user.name}!')
 
         # Реализация главного меню
         buttons_list = ['Моя биография','Моя статистика','Команда',
@@ -33,7 +34,7 @@ def cancel(message):
         send_start(message)
 
     if not TREE.__len__():
-        send_start(message)
+        send_start(message,initial=False)
     else:
         parent = TREE[-1]
         if parent == 'Моя статистика':
