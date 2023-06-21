@@ -1,5 +1,12 @@
 from conn import *
 
+def get_player_name(conn,tg_id) -> int:
+    sql = f'SELECT wolver.get_player_name({tg_id})'
+    conn.execute(sql)
+    player_name = conn.fetch_next()
+    return player_name[0].split(' ')[1]
+
+
 def get_stat(tree):
 
     sql = "SELECT p.player_name, games, goals, asists\

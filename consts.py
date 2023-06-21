@@ -1,4 +1,5 @@
 import telebot
+from queries import *
 
 def get_token():
     with open('files/token.txt') as f:
@@ -11,7 +12,7 @@ def get_conn_params():
 TOKEN = get_token()
 
 bot = telebot.TeleBot(TOKEN)
-
+db_session = Conn(get_conn_params())
 PLAYERS_ID_LIST = [878297528,1548423795]
 
 class Keyboard:
@@ -24,3 +25,9 @@ class Keyboard:
         for caption in captions:
             button = telebot.types.KeyboardButton(text=caption)
             self.keyboard.add(button)
+
+class User:
+    def __init__(self, message):
+        self.tg_id = int(message.chat.id)
+
+        self.name = get_player_name(db_session,self.tg_id)
