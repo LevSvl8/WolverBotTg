@@ -10,11 +10,12 @@ def send_start(message,initial = True ):
             - заправшиваются дополнительные данные, сохраняются в бд
     """
 
-    user = User(message)
+
     if message.chat.id not in PLAYERS_ID_LIST:
         if initial == True:
             bot.reply_to(message, f'Привет, для доступа обратись к админам команды')
     else:
+        user = User(message)
         if initial == True:
             bot.reply_to(message,f'Привет, {user.name}!')
 
