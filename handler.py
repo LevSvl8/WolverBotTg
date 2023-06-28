@@ -1,3 +1,5 @@
+import telebot.types
+
 from consts import *
 from queries import *
 
@@ -20,8 +22,7 @@ def send_start(message,initial = True ):
             bot.reply_to(message,f'Привет, {user.name}!')
 
         # Реализация главного меню
-        buttons_list = ['Моя биография','Моя статистика','Команда',
-                        'Управление командой','Важная информация']
+        buttons_list = ['Моя биография','Моя статистика','Команда','Важная информация','Управление командой']
         menu_keyboard = Keyboard(buttons_list)
 
         bot.send_message(chat_id=message.chat.id,text='Главное меню',reply_markup=menu_keyboard.get_keyboard())
@@ -68,13 +69,86 @@ def send_season_stat(message):
 
     buttons_list = ['Прошлый сезон', 'Текущий сезон','Вернуться']
     season_stat_keyboard = Keyboard(buttons_list)
-    bot.send_message(chat_id=message.chat.id, text='Статистика по сезонам', reply_markup=season_stat_keyboard.get_keyboard())
+    bot.send_message(chat_id=message.chat.id, text='Статистика по сезонам',
+                     reply_markup=season_stat_keyboard.get_keyboard())
 
 @bot.message_handler(func=lambda message: message.text=='Прошлый сезон' or message.text=='Текущий сезон')
 def send_season_stat(message):
     TREE.append(message.text) # добавляем родительский раздел, чтобы понять, какую статистику выдать
     season_stat = get_stat(TREE)
+"""
+--------------------------------------------------БЛОК УПРАВЛЕНИЕ КОМАНДОЙ--------------------------------------------------
+"""
+@bot.message_handler(func=lambda message: message.text=='Управление командой')
+def team_management(message):
+    if message.text !='Вернуться':
+        TREE.append(message.text) # добавляем родительский раздел, чтобы понять, какую статистику выдать
 
+    buttons_list = ['Добавить/Удалить игрока', 'Добавить/Удалить статистику','Вернуться']
+    team_management_keyboard = Keyboard(buttons_list)
+    bot.send_message(chat_id=message.chat.id, text='Меню управления командой',
+                     reply_markup=team_management_keyboard.get_keyboard())
+
+@bot.message_handler(func=lambda message: message.text=='Добавить/Удалить игрока')
+def add_delete_player_pt1(message):
+    if message.text !='Вернуться':
+        TREE.append(message.text) # добавляем родительский раздел, чтобы понять, какую статистику выдать
+
+    buttons_list = ['Вернуться']
+    add_new_player_keyboard = Keyboard(buttons_list)
+    bot.send_message(chat_id=message.chat.id, text='Добавление игрока',
+                     reply_markup=add_new_player_keyboard.get_keyboard())
+
+    player_info = []
+    bot.send_message(chat_id=message.chat.id,text='Введите фамилию и имя игрока')
+    bot.register_next_step_handler(message, type_player_name,player_info)
+
+def type_player_name(message,player_info):
+    ''' Админ вводит имя игрока с клавиатуры'''
+    name = message.text
+    #if validate_field(name) == True: # todo добавить проверку введного значения
+    player_info.append(name)
+    bot.send_message(chat_id=message.chat.id,text='Введите номер игрока')
+    bot.register_next_step_handler(message, type_player_number,player_info)
+
+def type_player_number(message,player_info):
+    ''' Админ вводит игровой номер игрока с клавиатуры'''
+    number = message.text
+    #if validate_field(name) == True: # todo добавить проверку введного значения
+    number = int(number)
+    player_info.append(number)
+    add_delete_player_pt2(message.chat.id,player_info)
+    # add_player_to_db(player_info)
+
+def add_delete_player_pt2(chat_id,player_info):
+    name, number = player_info[0],player_info[1]
+    str_player_info = f'Игрок: {name},\nИгровой номер: {number}'
+
+    inline_buttons = [
+        [
+          InlineKeyboardButton(text='Добавить',callback_data='create'),
+          InlineKeyboardButton(text='Удалить', callback_data='delete')
+        ],
+    ]
+    add_or_delete_kb = InlineKeyboardMarkup(inline_buttons)
+    bot.send_message(chat_id,str_player_info,reply_markup=add_or_delete_kb)
+
+# @bot.callback_query_handler()
+# def process_add_or_delete_kb(callback):
+#     if callback.data == 'create':
+#         print('create')
+#     if callback.data == 'create':
+#         print('delete')
+
+@bot.message_handler(func=lambda message: message.text=='Удалить игрока')
+def delete_player(message):
+    pass
+
+
+
+"""
+--------------------------------------------------БЛОК КОМАНДА--------------------------------------------------
+"""
 ''' Посмотреть ответы на сообщения'''
 # @bot.message_handler(func=lambda message: 1==1)
 # def handle_text(message):

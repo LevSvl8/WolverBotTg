@@ -6,9 +6,7 @@ def get_player_name(conn,tg_id) -> int:
     player_name = conn.fetch_next()
     return player_name[0].split(' ')[1]
 
-
 def get_stat(tree):
-
     sql = "SELECT p.player_name, games, goals, asists\
     FROM players p\
     JOIN wolver.stats s ON p.player_id = s.player_id"
@@ -31,3 +29,6 @@ def get_stat(tree):
 
     sql = ''
     return sql
+
+def add_player_to_db(player_info):
+    print(player_info)
