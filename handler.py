@@ -1,8 +1,12 @@
 import telebot.types
 
 from consts import *
+<<<<<<< HEAD
 #from queries import *
 
+=======
+from queries import *
+>>>>>>> c96f778764f1b5b03613f332039ee8362f67a27f
 
 TREE = []
 
@@ -14,12 +18,17 @@ def send_start(message,initial = True ):
     """
 
 
+<<<<<<< HEAD
     """if message.chat.id not in PLAYERS_ID_LIST:
+=======
+    if message.chat.id not in PLAYERS_ID_LIST:
+>>>>>>> c96f778764f1b5b03613f332039ee8362f67a27f
         if initial == True:
             bot.reply_to(message, f'Привет, для доступа обратись к админам команды')
     else:
         user = User(message)
         if initial == True:
+<<<<<<< HEAD
             bot.reply_to(message,f'Привет, {user.name}!')"""
 
         # Реализация главного меню
@@ -27,6 +36,15 @@ def send_start(message,initial = True ):
     menu_keyboard = Keyboard(buttons_list)
 
     bot.send_message(chat_id=message.chat.id,text='Главное меню',reply_markup=menu_keyboard.get_keyboard())
+=======
+            bot.reply_to(message,f'Привет, {user.name}!')
+
+        # Реализация главного меню
+        buttons_list = ['Моя биография','Моя статистика','Команда','Важная информация','Управление командой']
+        menu_keyboard = Keyboard(buttons_list)
+
+        bot.send_message(chat_id=message.chat.id,text='Главное меню',reply_markup=menu_keyboard.get_keyboard())
+>>>>>>> c96f778764f1b5b03613f332039ee8362f67a27f
 
 @bot.message_handler(func=lambda message: message.text == 'Вернуться')
 def cancel(message):
@@ -42,6 +60,7 @@ def cancel(message):
         parent = TREE[-1]
         if parent == 'Моя статистика':
             send_my_stat(message)
+<<<<<<< HEAD
         if parent == 'По сезонам':
             send_by_season_stat(message)
         if parent =='Команда':
@@ -52,6 +71,13 @@ def cancel(message):
             send_team_stats(message)
         if parent == 'Важная информация':
             send_information(message)
+=======
+        if parent == 'Статистика':
+            pass # добавить процедуру, которая обрабатывает Статистика
+        if parent == 'По сезонам':
+            send_by_season_stat(message)
+
+>>>>>>> c96f778764f1b5b03613f332039ee8362f67a27f
 """
 --------------------------------------------------БЛОК МОЯ СТАТИСТИКА--------------------------------------------------
 """
@@ -62,7 +88,11 @@ def send_my_stat(message):
 
     buttons_list = ['По сезонам', 'За всё время','Вернуться']
     stat_keyboard = Keyboard(buttons_list)
+<<<<<<< HEAD
     bot.send_message(chat_id=message.chat.id, text='Моя татистика', reply_markup=stat_keyboard.get_keyboard())
+=======
+    bot.send_message(chat_id=message.chat.id, text='Статистика', reply_markup=stat_keyboard.get_keyboard())
+>>>>>>> c96f778764f1b5b03613f332039ee8362f67a27f
 
 @bot.message_handler(func=lambda message: message.text == 'За всё время')
 def send_all_time_stat(message):
@@ -145,7 +175,11 @@ def send_team(message):
     обновлять каждый раз скрины с сайта офлк- дерьмо дерьма
     соответственно- нахуй убрать раздел"""
 @bot.message_handler(func=lambda message: message.text=='Статистика команды')    
+<<<<<<< HEAD
 def send_team_stats(message):
+=======
+def send_tables(message):
+>>>>>>> c96f778764f1b5b03613f332039ee8362f67a27f
     if message.text !='Вернуться':
         TREE.append(message.text) # добавляем родительский раздел, чтобы понять, какую статистику выдать
 

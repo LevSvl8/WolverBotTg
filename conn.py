@@ -10,12 +10,20 @@ class Conn:
 
         self.crs = self.connection.cursor()
 
+<<<<<<< HEAD
     """def execute(self,sql):
+=======
+    def execute(self,sql):
+>>>>>>> c96f778764f1b5b03613f332039ee8362f67a27f
         if self.type == 'PG':
             self.crs.execute(sql)
     def fetch_next(self):
         if self.type == 'PG':
+<<<<<<< HEAD
             return self.crs.fetchone()"""
+=======
+            return self.crs.fetchone()
+>>>>>>> c96f778764f1b5b03613f332039ee8362f67a27f
 def get_conn_params():
     with open('files/config.txt') as f:
         return f.readline().split(';')
