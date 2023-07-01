@@ -1,15 +1,10 @@
 import telebot
 from telebot.types import InlineKeyboardMarkup,ReplyKeyboardMarkup
 from telebot.types import InlineKeyboardButton,KeyboardButton
-<<<<<<< HEAD
-=======
 
 from queries import *
 import os, json, requests
->>>>>>> c96f778764f1b5b03613f332039ee8362f67a27f
 
-#from queries import *
-#import os, json, requests
 def get_token():
     with open('files/token.txt') as f:
         return f.readline()
@@ -22,11 +17,7 @@ bot = telebot.TeleBot(TOKEN)
 PLAYERS_ID_LIST = [878297528,1548423795]
 ANSWERS_FILENAME = 'files/user_answers.json'
 
-<<<<<<< HEAD
-"""def get_data_from_json_file(path):
-=======
 def get_data_from_json_file(path):
->>>>>>> c96f778764f1b5b03613f332039ee8362f67a27f
     if not os.path.exists(path):
         return None
     with open(path,'r',encoding='utf8') as f:
@@ -60,11 +51,7 @@ def validate_field(value):
 def get_updates():
     updates = requests.get(f'{URL}{TOKEN}/getUpdates?offset=0').json()['result']
     return updates
-<<<<<<< HEAD
-"""
-=======
 
->>>>>>> c96f778764f1b5b03613f332039ee8362f67a27f
 class Keyboard:
     def __init__(self, captions):
         self.keyboard = ReplyKeyboardMarkup(row_width=1,
@@ -83,7 +70,3 @@ class User:
         self.tg_id = int(message.chat.id)
 
         self.name = get_player_name(db_session,self.tg_id)
-<<<<<<< HEAD
-        
-=======
->>>>>>> c96f778764f1b5b03613f332039ee8362f67a27f
