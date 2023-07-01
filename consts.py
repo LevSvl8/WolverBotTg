@@ -2,7 +2,7 @@ import telebot
 from telebot.types import InlineKeyboardMarkup,ReplyKeyboardMarkup
 from telebot.types import InlineKeyboardButton,KeyboardButton
 
-from queries import *
+#from queries import *
 import os, json, requests
 
 def get_token():
@@ -65,8 +65,8 @@ class Keyboard:
             button = KeyboardButton(text=caption)
             self.keyboard.add(button)
 
-class User:
+"""class User:
     def __init__(self, message):
         self.tg_id = int(message.chat.id)
 
-        self.name = get_player_name(db_session,self.tg_id)
+        self.name = get_player_name(db_session,self.tg_id)"""
