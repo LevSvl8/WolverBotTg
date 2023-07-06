@@ -6,13 +6,12 @@ def get_player_name(conn,tg_id) -> int:
     player_name = conn.fetch_next()
     return player_name[0].split(' ')[1]
 
-def get_stat(tree):
-    sql = "SELECT p.player_name, games, goals, asists\
-    FROM players p\
-    JOIN wolver.stats s ON p.player_id = s.player_id"
-
+def get_stat(tree): #статистика игрока через команда ->список игроков -> статистика игрока\ аналогично моя статистика
+    sql = "SELECT *\
+    FROM players"
+    
     where_clause = ''
-
+    """
     if tree[0] == 'Моя статистика':
         pass
     elif tree[0] == 'Статистика':
@@ -26,7 +25,7 @@ def get_stat(tree):
             pass
         elif tree[2] == 'Текущий сезон':
             pass
-
+    """
     sql = ''
     return sql
 
