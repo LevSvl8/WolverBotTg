@@ -14,7 +14,9 @@ URL = 'https://api.telegram.org/bot'
 
 bot = telebot.TeleBot(TOKEN)
 
-PLAYERS_ID_LIST = [878297528,1548423795]
+ADMINS_ID_LIST =[1548423795,878297528]
+PLAYERS_ID_LIST =[565144419]
+TEST_ID=[1548423795]
 ANSWERS_FILENAME = 'files/user_answers.json'
 
 def get_data_from_json_file(path):
@@ -70,3 +72,5 @@ class User:
         self.tg_id = int(message.chat.id)
 
         self.name = get_player_name(db_session,self.tg_id)
+      
+

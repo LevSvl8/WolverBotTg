@@ -1,8 +1,6 @@
-import telebot.types
-from telebot import types
 from consts import *
-from queries import *
-from conn import *
+import datetime
+#import schedule
 
 TREE = []
 
@@ -14,19 +12,30 @@ def send_start(message,initial = True ):
     """
 
 
-    """if message.chat.id not in PLAYERS_ID_LIST:
-        if initial == True:
-            bot.reply_to(message, f'Привет, для доступа обратись к админам команды')
+    if message.chat.id not in PLAYERS_ID_LIST: 
+        if message.chat.id not in ADMINS_ID_LIST :
+            if initial == True:
+                bot.reply_to(message, f'Привет, для доступа обратись к админам команды')
+    
+    if message.chat.id in ADMINS_ID_LIST:
+        user=User(message)
+        if initial ==True:
+            bot.send_message(chat_id=message.chat.id,text=f'Привет, {user.name}!')
+
+            buttons_list = ['Моя статистика','Команда','Управление командой']
+            menu_keyboard = Keyboard(buttons_list)
+
+            bot.send_message(chat_id=message.chat.id,text='Главное меню',reply_markup=menu_keyboard.get_keyboard())
     else:
         user = User(message)
         if initial == True:
-            bot.reply_to(message,f'Привет, {user.name}!')"""
 
-        # Реализация главного меню
-    buttons_list = ['Моя биография','Моя статистика','Команда','Важная информация','Управление командой']
-    menu_keyboard = Keyboard(buttons_list)
+            bot.send_message(chat_id=message.chat.id,text=f'Привет, {user.name}!')
 
-    bot.send_message(chat_id=message.chat.id,text='Главное меню',reply_markup=menu_keyboard.get_keyboard())
+        buttons_list = ['Моя статистика','Команда']
+        menu_keyboard = Keyboard(buttons_list)
+
+        bot.send_message(chat_id=message.chat.id,text='Главное меню',reply_markup=menu_keyboard.get_keyboard())
 
 @bot.message_handler(func=lambda message: message.text == 'Вернуться')
 def cancel(message):
@@ -35,36 +44,31 @@ def cancel(message):
         TREE.pop(-1)
     except:
         send_start(message)
-
     if not TREE.__len__():
         send_start(message,initial=False)
     else:
         parent = TREE[-1]
         if parent == 'Моя статистика':
             send_my_stat(message)
-        if parent == 'Моя статистика за всё время':
-            send_my_all_time_stat(message)
         if parent == 'Моя статистика по сезонам':
             send_my_by_season_stat(message)
-        if parent == 'Моя статистика за сезон 2022':
-            send_my_season_2022_stat(message)
-        if parent == 'Моя статистика за текущий сезон':
-            send_my_season_2023_stat(message)
         if parent == 'Команда':
             send_team(message)
         if parent == 'Турнирные таблицы':
             send_tables(message)
         if parent == 'Статистика команды':
             send_team_stat(message)
-        if parent == 'Статистика команды за всё время':
+        if parent == 'Статистика команды по сезонам':
             send_team_all_time_stat(message)
-        if parent == 'Статистика команды за сезон 2022':
-            send_team_season_2022_stat(message)
-        if parent == 'Статистика команды за текущий сезон':
-            send_team_season_2023_stat(message)    
-        if parent == 'Список игроков':
-            send_players_list(message)
+        if parent == 'Игра':
+            prepair_game_mailing(message)
+        if parent == 'Тренировка':
+            prepair_training_mailing(message)
 
+"""
+else:
+    parent = TREE[-2]
+"""
 
 
 """
@@ -73,7 +77,7 @@ def cancel(message):
 @bot.message_handler(func=lambda message: message.text=='Моя статистика')
 def send_my_stat(message):
     if message.text !='Вернуться':
-        TREE.append(message.text) # добавляем родительский раздел, чтобы понять, какую статистику выдать
+        TREE.append(message.text)
 
     buttons_list = ['Моя статистика по сезонам', 'Моя статистика за всё время','Вернуться']
     my_stat_keyboard = Keyboard(buttons_list)
@@ -81,19 +85,14 @@ def send_my_stat(message):
 
 @bot.message_handler(func=lambda message: message.text =='Моя статистика за всё время')
 def send_my_all_time_stat(message):
-    if message.text !='Вернуться':
-        TREE.append(message.text) # добавляем родительский раздел, чтобы понять, какую статистику выдать
+    my_all_time_stat=db_player_all_time_stat(db_session)
+    bot.send_message(chat_id=message.chat.id, text=f'Игры: {my_all_time_stat[0][0]}\nГолы: {my_all_time_stat[0][1]}\nГолевые передачи: {my_all_time_stat[0][2]}\nЖёлтые карточки: {my_all_time_stat[0][3]}\nКрасные карточки: {my_all_time_stat[0][4]}')
 
-    buttons_list = ['Вернуться']
-    my_all_time_stat_keyboard = Keyboard(buttons_list)
-    my_all_time_stat=db_my_all_time_stat()
-
-    bot.send_message(chat_id=message.chat.id, text=f'Игры: {my_all_time_stat[0][0]}\nГолы: {my_all_time_stat[0][1]}\nГолевые передачи: {my_all_time_stat[0][2]}\nЖёлтые карточки: {my_all_time_stat[0][3]}\nКрасные карточки: {my_all_time_stat[0][4]}', reply_markup=my_all_time_stat_keyboard.get_keyboard())
 
 @bot.message_handler(func=lambda message: message.text=='Моя статистика по сезонам')
 def send_my_by_season_stat(message):
     if message.text !='Вернуться':
-        TREE.append(message.text) # добавляем родительский раздел, чтобы понять, какую статистику выдать
+        TREE.append(message.text)
 
     buttons_list = ['Моя статистика за сезон 2022', 'Моя статистика за текущий сезон','Вернуться']
     my_by_season_stat_keyboard = Keyboard(buttons_list)
@@ -101,66 +100,47 @@ def send_my_by_season_stat(message):
 
 @bot.message_handler(func=lambda message: message.text=='Моя статистика за текущий сезон')
 def send_my_season_2023_stat(message):
-    if message.text !='Вернуться':
-        TREE.append(message.text) # добавляем родительский раздел, чтобы понять, какую статистику выдать
 
-    buttons_list = ['Вернуться']
-    my_2023_stat_keyboard = Keyboard(buttons_list)
-    my_2023_stat=db_my_season_2023_stat()
-    bot.send_message(chat_id=message.chat.id, text=f'Игры: {my_2023_stat[0][0]}\nГолы: {my_2023_stat[0][1]}\nГолевые передачи: {my_2023_stat[0][2]}\nЖёлтые карточки: {my_2023_stat[0][3]}\nКрасные карточки: {my_2023_stat[0][4]}', reply_markup=my_2023_stat_keyboard.get_keyboard())
+    my_2023_stat=db_player_season_2023_stat(db_session)
+    bot.send_message(chat_id=message.chat.id, text=f'Игры: {my_2023_stat[0][0]}\nГолы: {my_2023_stat[0][1]}\nГолевые передачи: {my_2023_stat[0][2]}\nЖёлтые карточки: {my_2023_stat[0][3]}\nКрасные карточки: {my_2023_stat[0][4]}')
+
+    
 
 @bot.message_handler(func=lambda message: message.text=='Моя статистика за сезон 2022')
 def send_my_season_2022_stat(message):
-    if message.text !='Вернуться':
-        TREE.append(message.text) # добавляем родительский раздел, чтобы понять, какую статистику выдать
 
-    buttons_list = ['Вернуться']
-    my_2022_stat_keyboard = Keyboard(buttons_list)
-    my_2022_stat=db_my_season_2022_stat()
-    bot.send_message(chat_id=message.chat.id, text=f'Игры: {my_2022_stat[0][0]}\nГолы: {my_2022_stat[0][1]}\nГолевые передачи: {my_2022_stat[0][2]}\nЖёлтые карточки: {my_2022_stat[0][3]}\nКрасные карточки: {my_2022_stat[0][4]}', reply_markup=my_2022_stat_keyboard.get_keyboard())
+    my_2022_stat=db_player_season_2022_stat(db_session)
+    bot.send_message(chat_id=message.chat.id, text=f'Игры: {my_2022_stat[0][0]}\nГолы: {my_2022_stat[0][1]}\nГолевые передачи: {my_2022_stat[0][2]}\nЖёлтые карточки: {my_2022_stat[0][3]}\nКрасные карточки: {my_2022_stat[0][4]}')
 
 """
 --------------------------------------------------БЛОК КОМАНДА--------------------------------------------------
 """
-''' Посмотреть ответы на сообщения'''
-# @bot.message_handler(func=lambda message: 1==1)
-# def handle_text(message):
-#     print(message.text)
 
 @bot.message_handler(func=lambda message: message.text=='Команда')
 def send_team(message):
     if message.text !='Вернуться':
         TREE.append(message.text)
 
-    buttons_list = ['Турнирные таблицы', 'Список игроков','Статистика команды','Вернуться']
+    buttons_list = ['Турнирные таблицы', 'Список игроков','Статистика команды', 'Статистика игроков', 'Вернуться']
     stat_keyboard = Keyboard(buttons_list)
     bot.send_message(chat_id=message.chat.id, text='Команда', reply_markup=stat_keyboard.get_keyboard())
 
 @bot.message_handler(func=lambda message: message.text=='Турнирные таблицы')
 def send_tables(message):
-    if message.text !='Вернуться':
-        TREE.append(message.text) 
 
-    buttons_list = ['Лига','Кубок','Вернуться']
-    stat_keyboard = Keyboard(buttons_list)
-    bot.send_message(chat_id=message.chat.id, text='Турнирные таблицы', reply_markup=stat_keyboard.get_keyboard())
-    
+    bot.send_message(chat_id=message.chat.id, text='http://oflm.ru/league/vtoraya23/')
+
+
+
 @bot.message_handler(func=lambda message: message.text=='Список игроков')
 def send_players_list(message):
-    if message.text !='Вернуться':
-        TREE.append(message.text) # добавляем родительский раздел, чтобы понять, какую статистику выдать
 
-    buttons_list = ['Вернуться']
-    stat_keyboard = Keyboard(buttons_list)
-
-    player_list=db_player_list()
-    #link_list= db_link_list()
-    #link=""
+    player_list=db_players_list(db_session)
     msg=""
     for i in range (0,len(player_list)):
-        msg+=f'{player_list[i][1]}\nНомер:{player_list[i][0]}\n,{player_list[i][2]}\n'
+        msg+=f'{player_list[i][1]}\nНомер:{player_list[i][0]}\n,{player_list[i][2]}\n\n'
 
-    bot.send_message(chat_id=message.chat.id, text=msg, reply_markup=stat_keyboard.get_keyboard())
+    bot.send_message(chat_id=message.chat.id, text=msg)
 
 @bot.message_handler(func=lambda message: message.text=='Статистика команды')
 def send_team_stat(message):
@@ -169,18 +149,13 @@ def send_team_stat(message):
 
     buttons_list = ['Статистика команды по сезонам', 'Статистика команды за всё время','Вернуться']
     stat_keyboard = Keyboard(buttons_list)
-    bot.send_message(chat_id=message.chat.id, text='Статистика команды', reply_markup=stat_keyboard.get_keyboard())
+    bot.send_message(chat_id=message.chat.id, text='Выберите сезон', reply_markup=stat_keyboard.get_keyboard())
 
 @bot.message_handler(func=lambda message: message.text=='Статистика команды за всё время')
 def send_team_all_time_stat(message):
-    if message.text !='Вернуться':
-        TREE.append(message.text)
 
-    buttons_list = ['Вернуться']
-    team_stat_keyboard = Keyboard(buttons_list)
-
-    team_stat=db_team_all_time_stat()
-    bot.send_message(chat_id=message.chat.id, text=f'Игры:{team_stat[0][0]}\nПобеды:{team_stat[0][1]}\nПоражения:{team_stat[0][2]}\nНичьи:{team_stat[0][3]}\nГолов забито:{team_stat[0][4]}\nГолов пропущено:{team_stat[0][5]}\nЖёлтые карточки:{team_stat[0][6]}\nКрасные карточки:{team_stat[0][7]}', reply_markup=team_stat_keyboard.get_keyboard())
+    team_stat=db_team_all_time_stat(db_session)
+    bot.send_message(chat_id=message.chat.id, text=f'Игры:{team_stat[0][0]}\nПобеды:{team_stat[0][1]}\nПоражения:{team_stat[0][2]}\nНичьи:{team_stat[0][3]}\nГолов забито:{team_stat[0][4]}\nГолов пропущено:{team_stat[0][5]}\nЖёлтые карточки:{team_stat[0][6]}\nКрасные карточки:{team_stat[0][7]}')
 
 @bot.message_handler(func=lambda message: message.text=='Статистика команды по сезонам')
 def send_team_by_season_stat(message):
@@ -190,29 +165,44 @@ def send_team_by_season_stat(message):
     buttons_list = ['Статистика команды за сезон 2022', 'Статистика команды за текущий сезон', 'Вернуться']
     team_by_season_keyboard = Keyboard(buttons_list)
 
-    bot.send_message(chat_id=message.chat.id, text='Статика команды по сезонам' , reply_markup=team_by_season_keyboard.get_keyboard())
+    bot.send_message(chat_id=message.chat.id, text='Выберите сезон' , reply_markup=team_by_season_keyboard.get_keyboard())
 
 @bot.message_handler(func=lambda message: message.text=='Статистика команды за сезон 2022')
 def send_team_season_2022_stat(message):
-    if message.text !='Вернуться':
-        TREE.append(message.text)
 
-    buttons_list = ['Вернуться']
-    team_22_keyboard = Keyboard(buttons_list)
-
-    team_22=db_team_season_2022_stat()
-    bot.send_message(chat_id=message.chat.id, text=f'Игры:{team_22[0][0]}\nПобеды:{team_22[0][1]}\nПоражения:{team_22[0][2]}\nНичьи:{team_22[0][3]}\nГолов забито:{team_22[0][4]}\nГолов пропущено:{team_22[0][5]}\nЖёлтые карточки:{team_22[0][6]}\nКрасные карточки:{team_22[0][7]}', reply_markup=team_22_keyboard.get_keyboard())
+    team_22=db_team_season_2022_stat(db_session)
+    bot.send_message(chat_id=message.chat.id, text=f'Игры:{team_22[0][0]}\nПобеды:{team_22[0][1]}\nПоражения:{team_22[0][2]}\nНичьи:{team_22[0][3]}\nГолов забито:{team_22[0][4]}\nГолов пропущено:{team_22[0][5]}\nЖёлтые карточки:{team_22[0][6]}\nКрасные карточки:{team_22[0][7]}')
 
 @bot.message_handler(func=lambda message: message.text=='Статистика команды за текущий сезон')
 def send_team_season_2023_stat(message):
+
+    team_23=db_team_season_2023_stat(db_session)
+    bot.send_message(chat_id=message.chat.id, text=f'Игры:{team_23[0][0]}\nПобеды:{team_23[0][1]}\nПоражения:{team_23[0][2]}\nНичьи:{team_23[0][3]}\nГолов забито:{team_23[0][4]}\nГолов пропущено:{team_23[0][5]}\nЖёлтые карточки:{team_23[0][6]}\nКрасные карточки:{team_23[0][7]}')
+
+@bot.message_handler(func=lambda message: message.text=='Статистика игроков')
+def send_players_list(message):
+    #либо выводить список игроков InlineButton и по нажатию показывать статистику, либо добавить эту функцию в раздел список игроков
+    """
     if message.text !='Вернуться':
         TREE.append(message.text)
 
-    buttons_list = ['Вернуться']
-    team_23_keyboard = Keyboard(buttons_list)
+    buttons_list = ['Выберите игрока', 'Вернуться']
+    team_by_season_keyboard = Keyboard(buttons_list)
 
-    team_23=db_team_season_2023_stat()
-    bot.send_message(chat_id=message.chat.id, text=f'Игры:{team_23[0][0]}\nПобеды:{team_23[0][1]}\nПоражения:{team_23[0][2]}\nНичьи:{team_23[0][3]}\nГолов забито:{team_23[0][4]}\nГолов пропущено:{team_23[0][5]}\nЖёлтые карточки:{team_23[0][6]}\nКрасные карточки:{team_23[0][7]}', reply_markup=team_23_keyboard.get_keyboard())
+    player_list=db_players_list(db_session)
+    msg=""
+    for i in range (0,len(player_list)):
+        msg+=f'{player_list[i][1]}\nНомер:{player_list[i][0]}\n,{player_list[i][2]}\n\n'
+
+    bot.send_message(chat_id=message.chat.id, text='Выберите игрока')
+    """
+    bot.send_message(chat_id=message.chat.id, text='В скором времени')
+
+
+
+"""
+-------------------------------------------------БЛОК ВАЖНАЯ ИНФОРМАЦИЯ---------------------------------------------------
+"""
 
 
 
@@ -221,69 +211,230 @@ def send_team_season_2023_stat(message):
 """
 --------------------------------------------------БЛОК УПРАВЛЕНИЕ КОМАНДОЙ--------------------------------------------------
 """
+
+
 @bot.message_handler(func=lambda message: message.text=='Управление командой')
 def team_management(message):
     if message.text !='Вернуться':
         TREE.append(message.text) # добавляем родительский раздел, чтобы понять, какую статистику выдать
 
-    buttons_list = ['Добавить/Удалить игрока', 'Добавить/Удалить статистику','Вернуться']
+    buttons_list = ['Изменить статистику','Изменить состав команды', 'Подготовить рассылку','Вернуться']
     team_management_keyboard = Keyboard(buttons_list)
-    bot.send_message(chat_id=message.chat.id, text='Меню управления командой',
-                     reply_markup=team_management_keyboard.get_keyboard())
+    bot.send_message(chat_id=message.chat.id, text='Меню управления командой',reply_markup=team_management_keyboard.get_keyboard())
 
-@bot.message_handler(func=lambda message: message.text=='Добавить/Удалить игрока')
+@bot.message_handler(func=lambda message: message.text=='Изменить статистику')
 def add_delete_player_pt1(message):
     if message.text !='Вернуться':
         TREE.append(message.text) # добавляем родительский раздел, чтобы понять, какую статистику выдать
 
-    buttons_list = ['Вернуться']
+    buttons_list = ['Статистика команды', 'Статистика игрока', 'Вернуться']
     add_new_player_keyboard = Keyboard(buttons_list)
-    bot.send_message(chat_id=message.chat.id, text='Добавление игрока',
-                     reply_markup=add_new_player_keyboard.get_keyboard())
+    bot.send_message(chat_id=message.chat.id, text='Выберите раздел',reply_markup=add_new_player_keyboard.get_keyboard())
+
+
+
+@bot.message_handler(func=lambda message: message.text=='Изменить состав команды')
+def add_delete_player(message):
+    if message.text !='Вернуться':
+        TREE.append(message.text) # добавляем родительский раздел, чтобы понять, какую статистику выдать
+
+    buttons_list = ['Добавить игрока', 'Удалить игрока', 'Вернуться']
+    add_new_player_keyboard = Keyboard(buttons_list)
+    bot.send_message(chat_id=message.chat.id, text='Выберите нужное X',reply_markup=add_new_player_keyboard.get_keyboard())
+
+@bot.message_handler(func=lambda message: message.text=='Добавить игрока')
+def add_player_pt1(message):
 
     player_info = []
     bot.send_message(chat_id=message.chat.id,text='Введите фамилию и имя игрока')
     bot.register_next_step_handler(message, type_player_name,player_info)
 
 def type_player_name(message,player_info):
-    ''' Админ вводит имя игрока с клавиатуры'''
+
     name = message.text
     #if validate_field(name) == True: # todo добавить проверку введного значения
+    """
+    for sql=f"select name from players where name = '{name}'":
+        if sql not null:
+        bot.send_message(chat_id=message.chat.id, text='Игрок с таким именем уже существует')
+        предложить проверить список игроков и корректность внесённой информации
+    """
     player_info.append(name)
     bot.send_message(chat_id=message.chat.id,text='Введите номер игрока')
     bot.register_next_step_handler(message, type_player_number,player_info)
 
 def type_player_number(message,player_info):
-    ''' Админ вводит игровой номер игрока с клавиатуры'''
+
     number = message.text
-    #if validate_field(name) == True: # todo добавить проверку введного значения
+    #if validate_field(number) == True: # todo добавить проверку введного значения
+    """
+    for sql=f"select name from players where number = {number}":
+        if sql not null:
+        bot.send_message(chat_id=message.chat.id, text='Игровой номер --{number}-- занят')
+        предложить выбрать другой номер
+    """
     number = int(number)
     player_info.append(number)
-    add_delete_player_pt2(message.chat.id,player_info)
-    # add_player_to_db(player_info)
 
-def add_delete_player_pt2(chat_id,player_info):
-    name, number = player_info[0],player_info[1]
-    str_player_info = f'Игрок: {name},\nИгровой номер: {number}'
-
-    inline_buttons = [
-        [
-          InlineKeyboardButton(text='Добавить',callback_data='create'),
-          InlineKeyboardButton(text='Удалить', callback_data='delete')
-        ],
-    ]
-    add_or_delete_kb = InlineKeyboardMarkup(inline_buttons)
-    bot.send_message(chat_id,str_player_info,reply_markup=add_or_delete_kb)
-
-# @bot.callback_query_handler()
-# def process_add_or_delete_kb(callback):
-#     if callback.data == 'create':
-#         print('create')
-#     if callback.data == 'create':
-#         print('delete')
+    bot.send_message(chat_id=message.chat.id, text='Игрок добавлен')
+    db_insert(db_session,player_info)
 
 @bot.message_handler(func=lambda message: message.text=='Удалить игрока')
 def delete_player(message):
     pass
 
+
+"""
+--------------------------------------------Блок Рассылки-----------------------------------------------
+"""
+
+#нет проверки информации
+@bot.message_handler(func=lambda message: message.text=='Подготовить рассылку')
+def mailing_variants(message):
+    if message.text !='Вернуться':
+        TREE.append(message.text)
+
+    buttons_list = ['Игра','Тренировка', 'Объявление', 'Вернуться']
+    add_new_player_keyboard = Keyboard(buttons_list)
+
+    bot.send_message(chat_id=message.chat.id, text='Выберите мероприятие',reply_markup=add_new_player_keyboard.get_keyboard())
+
+@bot.message_handler(func=lambda message: message.text=='Игра')
+def prepair_game_mailing(message):
+
+    bot.send_message(chat_id=message.chat.id, text='Введите день')
+
+    info=[]
+    bot.register_next_step_handler(message,type_game_day, info)
+
+def type_game_day(message, info):
+    date=message.text
+    info.append(date)
+
+    bot.send_message(chat_id=message.chat.id,text='Введите время в формате HH:MM')
+    bot.register_next_step_handler(message, type_game_time, info)
+
+def type_game_time(message, info):
+    time=message.text
+    info.append(time)
+
+    bot.send_message(chat_id=message.chat.id,text='Вставьте адрес')
+    bot.register_next_step_handler(message, type_game_address, info)
+#сделать заготовленный список адресов 
+def type_game_address(message, info):
+    address=message.text
+    info.append(address)
+
+    bot.send_message(chat_id=message.chat.id, text='Вставьте ссылку на опрос')
+    bot.register_next_step_handler(message, type_game_link, info)
+
+def type_game_link(message,info):
+
+    link = message.text
+    info.append(link)
+
+    str_game=f'Время игры:{info[0]} {info[1]}\nАдрес:{info[2]}\nОпрос:{info[3]}'
+
+    for user_number in range(len(TEST_ID)):
+        chat_id = TEST_ID[user_number]
+        bot.send_message (text = str_game, chat_id = chat_id)
+
+@bot.message_handler(func=lambda message: message.text=='Тренировка')
+def prepair_training_mailing(message):
+
+    bot.send_message(chat_id=message.chat.id, text='Введите день')
+
+    info=[]
+    bot.register_next_step_handler(message,type_training_day, info)
+
+def type_training_day(message, info):
+    date=message.text
+    info.append(date)
+
+    bot.send_message(chat_id=message.chat.id,text='Введите время в формате HH:MM')
+    bot.register_next_step_handler(message, type_training_time, info)
+
+def type_training_time(message, info):
+    time=message.text
+    info.append(time)
+
+    bot.send_message(chat_id=message.chat.id,text='Вставьте адрес')
+    bot.register_next_step_handler(message, type_training_address, info)
+#сделать заготовленный список адресов 
+def type_training_address(message, info):
+    address=message.text
+    info.append(address)
+
+    bot.send_message(chat_id=message.chat.id, text='Вставьте ссылку на опрос')
+    bot.register_next_step_handler(message, type_training_link, info)
+
+def type_training_link(message,info):
+
+    link = message.text
+    info.append(link)
+
+    str_training=f'Время тренировки:{info[0]} {info[1]}\nАдрес:{info[2]}\nОпрос:{info[3]}'
+
+    for user_number in range(len(TEST_ID)):
+        chat_id = TEST_ID[user_number]
+        bot.send_message (text = str_training, chat_id = chat_id)
+
+#сразу выполняется
+"""
+Заготовка под рассылку по времени
+
+def type_link(message,info):
+
+    link = message.text
+    info.append(link)
+    buttons_list = ['Вернуться']
+    work_keyboard = Keyboard(buttons_list)
+
+    text, link = info[0],info[1]
+    str = f'Проверьте данные:\nТекст:"{text}"\nСсылка:"{link}"'
+
+
+    bot.send_message(chat_id=message.chat.id, text=str)
+    bot.send_message(chat_id=message.chat.id, text='Введите время рассылки')
+    bot.register_next_step_handler(message, type_date, info, str)
+def type_date(message,info,chat_id):
+    #считать время из сообщения, проверить на адекватность (если сегодня раньше текущего момента- идёт нахуй, ночное тоже исключим: 00:00-6:00)
+    date=message.text
+    time=f"{date}"
+    date=datetime.datetime.strptime(message.text, '%H:%M').time()
+
+    info.append(date)
+    date=info[2]
+    print(date)
+
+    str=f'{info[0]}\n{info[1]}'
+
+    for user_number in range(len(PLAYERS_ID_LIST)):
+        chat_id = PLAYERS_ID_LIST[user_number]
+        #bot.send_message (text = str, chat_id = chat_id)
+        schedule.every().day.at(time).do(bot.send_message (text = str, chat_id = chat_id))
+
+"""
+
+"""
+    #добавить меню с вариантами: свой вариант, сейчас, через полчаса, через час, утром(8:00), днём(14:00), вечером(18:00), завтра утром(8:00), завтра днём(14:00), завтра вечером(18:00)
+"""
+
+@bot.message_handler(func=lambda message: message.text=='Объявление')
+def prepair_advertisement(message):
+    if message.text !='Вернуться':
+        TREE.append(message.text)
+
+    buttons_list = ['Вернуться']
+    keyboard = Keyboard(buttons_list)
+
+    bot.send_message(chat_id=message.chat.id, text='Введите текст', reply_markup=keyboard.get_keyboard())
+    bot.register_next_step_handler(message,type_advertisement)
+
+def type_advertisement(message):
+    text=message.text
+
+    for user_number in range(len(TEST_ID)):
+        chat_id = TEST_ID[user_number]
+        bot.send_message (text = text, chat_id = chat_id)
 
