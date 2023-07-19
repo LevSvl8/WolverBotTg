@@ -81,11 +81,15 @@ def send_my_stat(message):
 
     buttons_list = ['Моя статистика по сезонам', 'Моя статистика за всё время','Вернуться']
     my_stat_keyboard = Keyboard(buttons_list)
-    bot.send_message(chat_id=message.chat.id, text='Статистика', reply_markup=my_stat_keyboard.get_keyboard())
+    bot.send_message(chat_id=message.chat.id, text='Выберите период', reply_markup=my_stat_keyboard.get_keyboard())
 
 @bot.message_handler(func=lambda message: message.text =='Моя статистика за всё время')
 def send_my_all_time_stat(message):
-    my_all_time_stat=db_player_all_time_stat(db_session)
+    tg_id=message.chat.id
+    player_info=[]
+    player_info.append(tg_id)
+    
+    my_all_time_stat=db_player_all_time_stat(db_session,player_info)
     bot.send_message(chat_id=message.chat.id, text=f'Игры: {my_all_time_stat[0][0]}\nГолы: {my_all_time_stat[0][1]}\nГолевые передачи: {my_all_time_stat[0][2]}\nЖёлтые карточки: {my_all_time_stat[0][3]}\nКрасные карточки: {my_all_time_stat[0][4]}')
 
 
@@ -96,20 +100,26 @@ def send_my_by_season_stat(message):
 
     buttons_list = ['Моя статистика за сезон 2022', 'Моя статистика за текущий сезон','Вернуться']
     my_by_season_stat_keyboard = Keyboard(buttons_list)
-    bot.send_message(chat_id=message.chat.id, text='Моя статистика по сезонам',reply_markup=my_by_season_stat_keyboard.get_keyboard())
+    bot.send_message(chat_id=message.chat.id, text='Выберите сезон',reply_markup=my_by_season_stat_keyboard.get_keyboard())
 
 @bot.message_handler(func=lambda message: message.text=='Моя статистика за текущий сезон')
 def send_my_season_2023_stat(message):
-
-    my_2023_stat=db_player_season_2023_stat(db_session)
+    tg_id=message.chat.id
+    player_info=[]
+    player_info.append(tg_id)
+    
+    my_2023_stat=db_player_season_2023_stat(db_session,player_info)
     bot.send_message(chat_id=message.chat.id, text=f'Игры: {my_2023_stat[0][0]}\nГолы: {my_2023_stat[0][1]}\nГолевые передачи: {my_2023_stat[0][2]}\nЖёлтые карточки: {my_2023_stat[0][3]}\nКрасные карточки: {my_2023_stat[0][4]}')
 
     
 
 @bot.message_handler(func=lambda message: message.text=='Моя статистика за сезон 2022')
 def send_my_season_2022_stat(message):
-
-    my_2022_stat=db_player_season_2022_stat(db_session)
+    tg_id=message.chat.id
+    player_info=[]
+    player_info.append(tg_id)
+    
+    my_2022_stat=db_player_season_2022_stat(db_session,player_info)
     bot.send_message(chat_id=message.chat.id, text=f'Игры: {my_2022_stat[0][0]}\nГолы: {my_2022_stat[0][1]}\nГолевые передачи: {my_2022_stat[0][2]}\nЖёлтые карточки: {my_2022_stat[0][3]}\nКрасные карточки: {my_2022_stat[0][4]}')
 
 """
@@ -201,7 +211,7 @@ def send_players_list(message):
 
 
 """
--------------------------------------------------БЛОК ВАЖНАЯ ИНФОРМАЦИЯ---------------------------------------------------
+-------------------------------------------------   БЛОК ВАЖНАЯ ИНФОРМАЦИЯ  ---------------------------------------------------
 """
 
 
@@ -209,7 +219,7 @@ def send_players_list(message):
 
 
 """
---------------------------------------------------БЛОК УПРАВЛЕНИЕ КОМАНДОЙ--------------------------------------------------
+--------------------------------------------------  БЛОК УПРАВЛЕНИЕ КОМАНДОЙ    --------------------------------------------------
 """
 
 
@@ -218,9 +228,13 @@ def team_management(message):
     if message.text !='Вернуться':
         TREE.append(message.text) # добавляем родительский раздел, чтобы понять, какую статистику выдать
 
-    buttons_list = ['Изменить статистику','Изменить состав команды', 'Подготовить рассылку','Вернуться']
+    buttons_list = ['Изменить статистику','Изменить состав команды', 'Подготовить рассылку', 'Редактировать профиль игрока', 'Вернуться']
     team_management_keyboard = Keyboard(buttons_list)
     bot.send_message(chat_id=message.chat.id, text='Меню управления командой',reply_markup=team_management_keyboard.get_keyboard())
+
+"""
+----------------------------------------------- управление статистикой  -----------------------------------------------------
+"""
 
 @bot.message_handler(func=lambda message: message.text=='Изменить статистику')
 def add_delete_player_pt1(message):
@@ -231,6 +245,10 @@ def add_delete_player_pt1(message):
     add_new_player_keyboard = Keyboard(buttons_list)
     bot.send_message(chat_id=message.chat.id, text='Выберите раздел',reply_markup=add_new_player_keyboard.get_keyboard())
 
+
+"""
+----------------------------------------------- добавить\удалить игрока ---------------------------------------------------
+"""
 
 
 @bot.message_handler(func=lambda message: message.text=='Изменить состав команды')
@@ -263,9 +281,8 @@ def type_player_name(message,player_info):
     bot.send_message(chat_id=message.chat.id,text='Введите номер игрока')
     bot.register_next_step_handler(message, type_player_number,player_info)
 
-def type_player_number(message,player_info):
-
-    number = message.text
+def type_player_number(message, player_info):
+    number=message.text
     #if validate_field(number) == True: # todo добавить проверку введного значения
     """
     for sql=f"select name from players where number = {number}":
@@ -273,19 +290,45 @@ def type_player_number(message,player_info):
         bot.send_message(chat_id=message.chat.id, text='Игровой номер --{number}-- занят')
         предложить выбрать другой номер
     """
-    number = int(number)
+    number=int(number)
     player_info.append(number)
+    bot.send_message(chat_id=message.chat.id,text='Введите tg_id игрока')
+    bot.register_next_step_handler(message, type_tg_id,player_info)
+
+def type_tg_id(message,player_info):
+
+    tg_id = message.text
+    #if validate_field(tg_id) == True: # todo добавить проверку введного значения
+    """
+    for sql=f"select name from players where tg_id = {tg_id}":
+        if sql not null:
+        bot.send_message(chat_id=message.chat.id, text='Данный --{tg_id}-- уже принадлежит кому-то')
+        предложить выбрать другой номер
+    """
+    tg_id = int(tg_id)
+    player_info.append(tg_id)
 
     bot.send_message(chat_id=message.chat.id, text='Игрок добавлен')
-    db_insert(db_session,player_info)
+    db_insert_player(db_session,player_info)
 
 @bot.message_handler(func=lambda message: message.text=='Удалить игрока')
-def delete_player(message):
-    pass
+def delete_player_pt1(message):
+    
+    bot.send_message(chat_id=message.chat.id, text='Введите номер игрока')
+    bot.register_next_step_handler(message, delete_player_pt2)
+
+def delete_player_pt2(message):
+    number=message.text
+    number=int(number)
+    player_info=[]
+    player_info.append(number)
+
+    bot.send_message(chat_id=message.chat.id, text='Игрок удалён')
+    db_delete_player(db_session, player_info)
 
 
 """
---------------------------------------------Блок Рассылки-----------------------------------------------
+--------------------------------------------------  рассылка    ------------------------------------------------------
 """
 
 #нет проверки информации
@@ -438,3 +481,33 @@ def type_advertisement(message):
         chat_id = TEST_ID[user_number]
         bot.send_message (text = text, chat_id = chat_id)
 
+
+"""
+-------------------------------------------------   редактировать профиль игрока(вставляет ссылку на вк)    ---------------------------------------
+"""
+@bot.message_handler(func=lambda message: message.text=='Редактировать профиль игрока')
+def choose_player(message):
+    if message.text !='Вернуться':
+        TREE.append(message.text)
+
+    buttons_list = ['Вернуться']
+    keyboard = Keyboard(buttons_list)
+
+    bot.send_message(chat_id=message.chat.id, text='Введите номер игрока', reply_markup=keyboard.get_keyboard())
+    bot.register_next_step_handler(message,type_number)
+
+def type_number(message):
+    number=message.text
+    number=int(number)
+    player_info=[]
+    player_info.append(number)
+
+    bot.send_message(chat_id=message.chat.id, text='Введите ссылку на профиль в Вконтакте')
+    bot.register_next_step_handler(message, type_vk_id,player_info)
+
+def type_vk_id(message, player_info):
+    vk_id=message.text
+    player_info.append(vk_id)
+
+    bot.send_message(chat_id=message.chat.id, text='Профиль изменён')
+    db_insert_vk_id(db_session,player_info)

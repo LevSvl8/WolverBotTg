@@ -1,23 +1,23 @@
-import MySQLdb as ms
+import psycopg as pg
 
 class Conn:
     def __init__(self,params):
         self.host,self.port = params[0], params[1]
-        self.database,self.user,self.pwd = params[2],params[3],params[4]
+        self.dbname,self.user,self.pwd = params[2],params[3],params[4]
         self.type = params[5]
-        self.connection = ms.connect(host = self.host,port = int(self.port),database = self.database,
+        self.connection = pg.connect(host = self.host,port = int(self.port),dbname = self.dbname,
                                      user = self.user,password = self.pwd, autocommit=True)
 
         self.crs = self.connection.cursor()
 
     def execute(self,sql):
-        if self.type == 'ms':
+        if self.type == 'PG':
             self.crs.execute(sql)
     def fetch_next(self):
-        if self.type == 'ms':
+        if self.type == 'PG':
             return self.crs.fetchone()
     def fetch_all(self):
-        if self.type=='ms':
+        if self.type=='PG':
             return self.crs.fetchall()
         
 
@@ -27,7 +27,3 @@ def get_conn_params():
         return f.readline().split(';')
 
 db_session= Conn(get_conn_params())
-
-
-
-

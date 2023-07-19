@@ -24,10 +24,9 @@ def db_players_list(conn):
         list.append(row)
     return(list)
 
-number=4
-
-def db_player_all_time_stat(conn):
-    sql=f"select games, goals, assists, yellow_cards, red_cards from players_stat_alltime where number={number}"
+def db_player_all_time_stat(conn,player_info):
+    tg_id=player_info[0]
+    sql=f"select games, goals, assists, yellow_cards, red_cards from players_stat_all_time psat join players p on p.number=psat.number where tg_id={tg_id}"
     conn.execute(sql)
     stat=[]
     result=conn.fetch_all()
@@ -35,8 +34,9 @@ def db_player_all_time_stat(conn):
         stat.append(row)
     return(stat)
 
-def db_player_season_2023_stat(conn):
-    sql=f"select games, goals, assists, yellow_cards, red_cards from players_stat_season_2023 where number=4"
+def db_player_season_2023_stat(conn,player_info):
+    tg_id=player_info[0]
+    sql=f"select games, goals, assists, yellow_cards, red_cards from players_stat_season_2023 pss23 join players p on p.number=pss23.number where tg_id={tg_id}"    
     conn.execute(sql)
     stat=[]
     result=conn.fetch_all()
@@ -44,8 +44,9 @@ def db_player_season_2023_stat(conn):
         stat.append(row)
     return(stat)
 
-def db_player_season_2022_stat(conn):
-    sql=f"select games, goals, assists, yellow_cards, red_cards from players_stat_season_2022 where number=4"
+def db_player_season_2022_stat(conn,player_info):
+    tg_id=player_info[0]
+    sql=f"select games, goals, assists, yellow_cards, red_cards from players_stat_season_2022 pss22 join players p on p.number=pss22.number where tg_id={tg_id}"
     conn.execute(sql)
     stat=[]
     result=conn.fetch_all()
@@ -80,29 +81,20 @@ def db_team_season_2023_stat(conn):
         stat.append(row)
     return(stat)
 
-def db_insert(conn,player_info):
+def db_insert_player(conn,player_info):
     number=player_info[1]
     name= player_info[0]
-    sql=f"insert into players (number, name) values({number}, '{name}')"
+    tg_id=player_info[2]
+    sql=f"insert into players (number, name, tg_id) values({number}, '{name}', {tg_id})"
     conn.execute(sql)
-    check="select * from players where number=2"
-    conn.execute(check)
-    line=[]
-    result=conn.fetch_all()
-    for row in result:
-        line.append(row)
-        print(line)
-    return(line)
 
-def db_count(conn):
-    sql="select count(id) from players"
+def db_delete_player(conn, player_info):
+    number=player_info[0]
+    sql=f"delete from players where number={number}"
     conn.execute(sql)
-    line=[]
-    result=conn.fetch_all()
-    for row in result:
-        line.append(row)
-        print(line)
-    return(line)
 
-def add_player_to_db(player_info):
-    print(player_info)
+def db_insert_vk_id(conn,player_info):
+    number= player_info[0]
+    vk_id= player_info[1]
+    sql=f"update players set vk_id='{vk_id}' where number={number}"
+    conn.execute(sql)
