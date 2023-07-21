@@ -22,7 +22,7 @@ def send_start(message,initial = True ):
         if initial ==True:
             bot.send_message(chat_id=message.chat.id,text=f'Привет, {user.name}!')
 
-            buttons_list = ['Моя статистика','Команда','Управление командой']
+            buttons_list = ['Моя статистика','Команда','Управление командой', "Проверка feedback'а"]
             menu_keyboard = Keyboard(buttons_list)
 
             bot.send_message(chat_id=message.chat.id,text='Главное меню',reply_markup=menu_keyboard.get_keyboard())
@@ -32,7 +32,7 @@ def send_start(message,initial = True ):
 
             bot.send_message(chat_id=message.chat.id,text=f'Привет, {user.name}!')
 
-        buttons_list = ['Моя статистика','Команда']
+        buttons_list = ['Моя статистика','Команда', 'Обратная связь']
         menu_keyboard = Keyboard(buttons_list)
 
         bot.send_message(chat_id=message.chat.id,text='Главное меню',reply_markup=menu_keyboard.get_keyboard())
@@ -69,6 +69,45 @@ def cancel(message):
 else:
     parent = TREE[-2]
 """
+"""
+---------------------------------------------------БЛОК ОБРАТНАЯ СВЯЗЬ------------------------------------------------
+"""
+@bot.message_handler(func=lambda message: message.text=='Обратная связь')
+def send_feedback(message):
+    if message.text !='Вернуться':
+        TREE.append(message.text)
+
+    buttons_list = ['Вернуться']
+    my_stat_keyboard = Keyboard(buttons_list)
+    bot.send_message(chat_id=message.chat.id, text='Введите сообщение', reply_markup=my_stat_keyboard.get_keyboard())
+
+    info=[]
+    tg_id=message.chat.id
+    tg_id=int(tg_id)
+    info.append(tg_id)
+    bot.register_next_step_handler(message, type_feedback,info )
+
+def type_feedback(message,info):
+    feedback=message.text
+    info.append(feedback)
+    db_feedback_insert(db_session,info)
+
+    bot.send_message(chat_id=message.chat.id, text='Сообщение отправлено')
+    for user_number in range(len(TEST_ID)):
+        chat_id = TEST_ID[user_number]
+        bot.send_message (text = 'Получено сообщение', chat_id = chat_id)
+
+@bot.message_handler(func=lambda message: message.text=="Проверка feedback'а")
+def send_feedback(message):
+    if message.text !='Вернуться':
+        TREE.append(message.text)
+
+    buttons_list = ['Вернуться']
+    my_stat_keyboard = Keyboard(buttons_list)
+
+    sql=db_feedback_check(db_session)
+    bot.send_message(chat_id=message.chat.id, text=f'Имя пользователя:\n{sql[0][0]}\n\nТекст:\n"{sql[0][1]}"', reply_markup=my_stat_keyboard.get_keyboard())
+    #bot.send_message(chat_id=message.chat.id, text=sql, reply_markup=my_stat_keyboard.get_keyboard())
 
 
 """

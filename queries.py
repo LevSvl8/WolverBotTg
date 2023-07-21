@@ -98,3 +98,18 @@ def db_insert_vk_id(conn,player_info):
     vk_id= player_info[1]
     sql=f"update players set vk_id='{vk_id}' where number={number}"
     conn.execute(sql)
+
+def db_feedback_insert(conn,info):
+    tg_id=info[0]
+    text=info[1]
+    sql=f"insert into feedback values((select number from players where tg_id={tg_id}), '{text}') "
+    conn.execute(sql)
+
+def db_feedback_check(conn):
+    sql="select p.name, f.text from feedback f join players p on p.number=f.number"
+    conn.execute(sql)
+    arr=[]
+    result=conn.fetch_all()
+    for row in result:
+        arr.append(row)
+    return(arr)
