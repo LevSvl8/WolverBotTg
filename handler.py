@@ -1,5 +1,6 @@
 from consts import *
 import datetime
+from  telebot import types
 #import schedule
 
 TREE = []
@@ -21,11 +22,11 @@ def send_start(message,initial = True ):
         user=User(message)
         if initial ==True:
             bot.send_message(chat_id=message.chat.id,text=f'Привет, {user.name}!')
-
-            buttons_list = ['Тест Маркдауна','Моя статистика','Команда','Управление командой', "Проверка feedback'а"]
-            menu_keyboard = Keyboard(buttons_list)
-
-            bot.send_message(chat_id=message.chat.id,text='Главное меню',reply_markup=menu_keyboard.get_keyboard())
+            
+        buttons_list = ['Тест','Моя статистика','Команда','Управление командой', "Проверка feedback'а"]
+        menu_keyboard = Keyboard(buttons_list)
+            
+        bot.send_message(chat_id=message.chat.id,text='Главное меню',reply_markup=menu_keyboard.get_keyboard())
     else:
         user = User(message)
         if initial == True:
@@ -45,7 +46,7 @@ def cancel(message):
     except:
         send_start(message)
     if not TREE.__len__():
-        send_start(message,initial=False)
+        send_start(message)
     else:
         parent = TREE[-1]
         if parent == 'Моя статистика':
@@ -60,26 +61,33 @@ def cancel(message):
             send_team_stat(message)
         if parent == 'Статистика команды по сезонам':
             send_team_all_time_stat(message)
+        if parent == 'Изменить статистику':
+            change_stat(message)
+        if parent == 'Подготовить рассылку':
+            mailing_variants(message)
         if parent == 'Игра':
             prepair_game_mailing(message)
         if parent == 'Тренировка':
             prepair_training_mailing(message)
+        if parent == 'Тест':
+            send_remark(message)
 
-"""
-else:
-    parent = TREE[-2]
-"""
-@bot.message_handler(func=lambda message: message.text=='Тест Маркдауна')
-def send_feedback(message):
-    
-    player_list=db_players_list(db_session)
-    msg=""
-    for i in range (0,len(player_list)):
-        msg+=f'__{player_list[i][1]}__\n' +f'Номер:{player_list[i][0]}\n{player_list[i][2]}\n\n'
+@bot.message_handler(func=lambda message: message.text=='Тест')
+def send_test(message):
+    if message.text !='Вернуться':
+        TREE.append(message.text)
 
-    bot.send_message(chat_id=message.chat.id, text=msg, parse_mode='MarkdownV2')
-    
-    #bot.send_message(chat_id=message.chat.id, text='__rte__', parse_mode='Markdown')
+    button_list=['Тест ремарок','Вернуться']
+    keyboard1=Keyboard(button_list)
+    bot.send_message(chat_id=message.chat.id, text='Нажми на кнопку, получишь результат',reply_markup=keyboard1.get_keyboard())
+
+@bot.message_handler(func=lambda message: message.text=='Тест ремарок')
+def send_remark(message):
+    if message.text !='Вернуться':
+        TREE.append(message.text)
+    button_list=['Вернуться']
+    keyboard2=Keyboard(button_list)
+    bot.send_message(chat_id=message.chat.id, text='Нажми', reply_markup=keyboard2.get_keyboard())
  
 """
 ---------------------------------------------------БЛОК ОБРАТНАЯ СВЯЗЬ------------------------------------------------
@@ -285,7 +293,7 @@ def team_management(message):
 """
 
 @bot.message_handler(func=lambda message: message.text=='Изменить статистику')
-def add_delete_player_pt1(message):
+def change_stat(message):
     if message.text !='Вернуться':
         TREE.append(message.text) # добавляем родительский раздел, чтобы понять, какую статистику выдать
 
