@@ -22,7 +22,7 @@ def send_start(message,initial = True ):
         if initial ==True:
             bot.send_message(chat_id=message.chat.id,text=f'Привет, {user.name}!')
 
-            buttons_list = ['Моя статистика','Команда','Управление командой', "Проверка feedback'а"]
+            buttons_list = ['Тест Маркдауна','Моя статистика','Команда','Управление командой', "Проверка feedback'а"]
             menu_keyboard = Keyboard(buttons_list)
 
             bot.send_message(chat_id=message.chat.id,text='Главное меню',reply_markup=menu_keyboard.get_keyboard())
@@ -69,6 +69,18 @@ def cancel(message):
 else:
     parent = TREE[-2]
 """
+@bot.message_handler(func=lambda message: message.text=='Тест Маркдауна')
+def send_feedback(message):
+    
+    player_list=db_players_list(db_session)
+    msg=""
+    for i in range (0,len(player_list)):
+        msg+=f'__{player_list[i][1]}__\n' +f'Номер:{player_list[i][0]}\n{player_list[i][2]}\n\n'
+
+    bot.send_message(chat_id=message.chat.id, text=msg, parse_mode='MarkdownV2')
+    
+    #bot.send_message(chat_id=message.chat.id, text='__rte__', parse_mode='Markdown')
+ 
 """
 ---------------------------------------------------БЛОК ОБРАТНАЯ СВЯЗЬ------------------------------------------------
 """
@@ -106,10 +118,7 @@ def send_feedback(message):
     my_stat_keyboard = Keyboard(buttons_list)
 
     sql=db_feedback_check(db_session)
-    bot.send_message(chat_id=message.chat.id, text=f'Имя пользователя:\n{sql[0][0]}\n\nТекст:\n"{sql[0][1]}"', reply_markup=my_stat_keyboard.get_keyboard())
-    #bot.send_message(chat_id=message.chat.id, text=sql, reply_markup=my_stat_keyboard.get_keyboard())
-
-
+    bot.send_message(chat_id=message.chat.id, text=f'__Имя пользователя:__\n{sql[0][0]}\n\n__Текст:__\n"{sql[0][1]}"', parse_mode='MarkdownV2', reply_markup=my_stat_keyboard.get_keyboard())
 """
 --------------------------------------------------БЛОК МОЯ СТАТИСТИКА--------------------------------------------------
 """
